@@ -1,0 +1,6 @@
+Dear Jane Doe,
+The book 'The Great Gatsby' by F. Scott Fitzgerald is now available.
+You can reserve it at your convenience.
+Best regards,
+Library Management System
+30.04.2025 12:01:57

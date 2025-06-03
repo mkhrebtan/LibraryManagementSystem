@@ -1,10 +1,25 @@
-﻿using LibraryManagementSystem.Models;
+﻿using LibraryManagementSystem.Data;
+using LibraryManagementSystem.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using LibraryManagementSystem.Services;
 
-User? currentUser = null;
+LibraryDbContext libraryDbContext = new LibraryDbContext();
+BookService bookService = new BookService(libraryDbContext);
+
+List<Book> books = new List<Book>
+{
+    new Book { Title = "1984", Genre = "Dystopian", Author = "George Orwell", PublicationYear = 1985, PageCount = 328 },
+    new Book { Title = "To Kill a Mockingbird", Genre = "Fiction", Author = "Harper Lee", PublicationYear = 1960, PageCount = 281 },
+    new Book { Title = "The Great Gatsby", Genre = "Fiction", Author = "F. Scott Fitzgerald", PublicationYear = 1925, PageCount = 180 },
+    new Book { Title = "The Catcher in the Rye", Genre = "Fiction", Author = "J.D. Salinger", PublicationYear = 1951, PageCount = 277 },
+    new Book { Title = "Brave New World", Genre = "Dystopian", Author = "Aldous Huxley", PublicationYear = 1932, PageCount = 311 },
+};
+
 
 Dictionary<string, Action> userMenuActions = new Dictionary<string, Action>
 {
-    { "Get All Books", () => Console.WriteLine("Book listing not implemented.") },
+    { "Get All Books", () => GetAllBooks() },
     { "Get Books By Genre", () => Console.WriteLine("Book listing by genre not implemented.") },
     { "Reserve Book", () => Console.WriteLine("Book reservation not implemented.") },
     { "Notify Me When Book Is Available", () => Console.WriteLine("Notidications aren't implemented.") },
@@ -13,8 +28,9 @@ Dictionary<string, Action> userMenuActions = new Dictionary<string, Action>
 
 Dictionary<string, Action> adminMenuActions = new Dictionary<string, Action>
 {
-    { "Add book", () => Console.WriteLine("Add book not implemented.") },
-    { "Remove book", () => Console.WriteLine("Remove book not implemented.")}
+    { "Add book", () => AddBook() },
+    { "Remove book", () => RemoveBook() },
+    { "Get All Books", () => GetAllBooks() },
 };
 
 Dictionary<string, Action> loginMenuActions = new Dictionary<string, Action>
@@ -67,8 +83,6 @@ void DisplayMenu(Dictionary<string, Action> menuActions, string title)
                 var action = menuActions.Values.ElementAt(selectedIndex);
                 Console.Clear(); Console.WriteLine("\x1b[3J");
                 action.Invoke();
-                // Console.WriteLine("\nPress any key to return back.");
-                // Console.ReadKey();
                 break;
             case ConsoleKey.Q:
                 return;
@@ -77,3 +91,69 @@ void DisplayMenu(Dictionary<string, Action> menuActions, string title)
     while (true);
 }
 
+#region Admin
+
+void AddBook()
+{
+    Console.WriteLine("Book adding not implemented");
+    ConfirmAction();
+}
+
+void RemoveBook()
+{
+    Console.Write("Enter book ID: ");
+    if (!int.TryParse(Console.ReadLine(), out int bookId))
+    {
+        Console.WriteLine("Invalid book ID.");
+        return;
+    }
+
+    var book = bookService.GetBookById(bookId);
+    if (book == null)
+    {
+        Console.WriteLine("Book not found.");
+        return;
+    }
+
+    try
+    {
+        bookService.RemoveBook(book);
+        Console.WriteLine($"Book removed: {book.Title} by {book.Author}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error removing book: {ex.Message}");
+    }
+
+    ConfirmAction();
+}
+
+#endregion
+
+#region User
+
+void GetAllBooks()
+{
+    var books = bookService.GetAllBooks();
+    if (books.Count() > 0)
+    {
+        foreach(var book in books)
+        {
+            Console.WriteLine(book);
+        }
+    }
+    else
+    {
+        Console.WriteLine("No books found.");
+    }
+    
+    ConfirmAction();
+}
+
+#endregion
+
+void ConfirmAction()
+{
+    Console.WriteLine("\nPress any key to return back.");
+    Console.ReadKey();
+}

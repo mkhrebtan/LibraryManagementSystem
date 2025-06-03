@@ -91,29 +91,17 @@ namespace LibraryManagementSystem.Models
         
         #endregion       
 
-        public delegate void BookReturnedHandler(Book book);
+        public delegate void BookReservationHandler(Book book);
 
-        private BookReturnedHandler? _bookReturnedHandlers;
-
-        public void AddBookReturnedHandler(BookReturnedHandler handler)
-        {
-            if (_isAvailable)
-            {
-                throw new InvalidOperationException("Book is already available.");
-            }
-            _bookReturnedHandlers += handler;
-        }
-
-        public void RemoveBookReturnedHandler(BookReturnedHandler handler)
-        {
-            _bookReturnedHandlers -= handler;
-        }
+        public event BookReservationHandler? Reserved;
+        public event BookReservationHandler? Returned;
 
         public void Reserve()
         {
             if (!IsAvailable)
                 throw new InvalidOperationException("Book is already reserved.");
             IsAvailable = false;
+            Reserved?.Invoke(this);
         }
 
         public void Return()
@@ -121,7 +109,7 @@ namespace LibraryManagementSystem.Models
             if (IsAvailable)
                 throw new InvalidOperationException("Book is already available.");
             IsAvailable = true;
-            _bookReturnedHandlers?.Invoke(this);
+            Returned?.Invoke(this);
         }
 
         public override string ToString()

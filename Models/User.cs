@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LibraryManagementSystem.Enums;
 
 namespace LibraryManagementSystem.Models
 {
@@ -79,49 +80,29 @@ namespace LibraryManagementSystem.Models
                 _password = value;
             }
         }
+
+        public Dictionary<int, NotificationType> Subscriptions { get; private set; } = new Dictionary<int, NotificationType>();
+        
         #endregion
     
-        public void NotifyViaEmail(Book book)
+        public void SubscribeToBookAvailability(int bookId, NotificationType notificationType)
         {
-            try
+            if (Subscriptions.ContainsKey(bookId))
             {
-                using (StreamWriter sw = new StreamWriter(_email, true))
-                {
-                    sw.WriteLine($"Dear {Name},\n" +
-                                $"The book '{book.Title}' by {book.Author} is now available.\n" +
-                                $"You can reserve it at your convenience.\n" +
-                                $"Best regards,\n" +
-                                $"Library Management System\n" +
-                                $"{DateTime.Now}");    
-                }
+                Subscriptions[bookId] = notificationType;
             }
-            catch (Exception ex)
+            else
             {
-
-                Console.WriteLine($"Error sending email: {ex.Message}");
+                Subscriptions.Add(bookId, notificationType);
             }
-            book.RemoveBookReturnedHandler(NotifyViaEmail);
         }
 
-        public void NotifyViaPhone(Book book)
+        public void UnsubscribeFromBookAvailability(int bookId)
         {
-            try
+            if (Subscriptions.ContainsKey(bookId))
             {
-                using (StreamWriter sw = new StreamWriter(_phoneNumber, true))
-                {
-                    sw.WriteLine($"Dear {Name},\n" +
-                                $"The book '{book.Title}' by {book.Author} is now available.\n" +
-                                $"You can reserve it at your convenience.\n" +
-                                $"Best regards,\n" +
-                                $"Library Management System\n" +
-                                $"{DateTime.Now}");    
-                }
+                Subscriptions.Remove(bookId);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error sending SMS: {ex.Message}");
-            }
-            book.RemoveBookReturnedHandler(NotifyViaPhone);
         }
     }
 }

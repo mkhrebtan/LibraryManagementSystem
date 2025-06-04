@@ -99,5 +99,8 @@ public class User
     
 #endregion
 
-    
+    public override string ToString()
+    {
+        return $"ID: {Id}, Name: {Name}, Email: {Email}, Phone: {PhoneNumber}, Login: {Login}";
+    }
 }

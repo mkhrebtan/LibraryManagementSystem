@@ -35,14 +35,28 @@ namespace LibraryManagementSystem.Services
 
         public void AddBook(Book book)
         {
-            _context.Books.Add(book);
-            _context.SaveChanges();
+            try
+            {
+                _context.Books.Add(book);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException("Failed to add book to database. It may already exist.", ex);
+            }
         }
 
         public void RemoveBook(Book bookToDelete)
         {  
-            _context.Books.Remove(bookToDelete);
-            _context.SaveChanges();
+            try
+            {
+                _context.Books.Remove(bookToDelete);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException("Failed to remove book from database. It may not exist.", ex);
+            }
         }
     }
 }

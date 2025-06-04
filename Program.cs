@@ -6,21 +6,12 @@ using LibraryManagementSystem.Services;
 
 LibraryDbContext libraryDbContext = new LibraryDbContext();
 BookService bookService = new BookService(libraryDbContext);
-
-List<Book> books = new List<Book>
-{
-    new Book { Title = "1984", Genre = "Dystopian", Author = "George Orwell", PublicationYear = 1985, PageCount = 328 },
-    new Book { Title = "To Kill a Mockingbird", Genre = "Fiction", Author = "Harper Lee", PublicationYear = 1960, PageCount = 281 },
-    new Book { Title = "The Great Gatsby", Genre = "Fiction", Author = "F. Scott Fitzgerald", PublicationYear = 1925, PageCount = 180 },
-    new Book { Title = "The Catcher in the Rye", Genre = "Fiction", Author = "J.D. Salinger", PublicationYear = 1951, PageCount = 277 },
-    new Book { Title = "Brave New World", Genre = "Dystopian", Author = "Aldous Huxley", PublicationYear = 1932, PageCount = 311 },
-};
-
+UserService userService = new UserService(libraryDbContext);
 
 Dictionary<string, Action> userMenuActions = new Dictionary<string, Action>
 {
     { "Get All Books", () => GetAllBooks() },
-    { "Get Books By Genre", () => Console.WriteLine("Book listing by genre not implemented.") },
+    { "Get Books By Genre", () => GetAllBooksByGenre() },
     { "Reserve Book", () => Console.WriteLine("Book reservation not implemented.") },
     { "Notify Me When Book Is Available", () => Console.WriteLine("Notidications aren't implemented.") },
     { "Return Book", () => Console.WriteLine("Book returning not implemented.") },
@@ -29,15 +20,19 @@ Dictionary<string, Action> userMenuActions = new Dictionary<string, Action>
 Dictionary<string, Action> adminMenuActions = new Dictionary<string, Action>
 {
     { "Add book", () => AddBook() },
-    { "Remove book", () => RemoveBook() },
+    { "Remove book", () => DisplayMenu(GetAllBooksForRemove(), "Select Book to Remove") },
+    { "Add user", () => AddUser() },
+    { "Remove user", () => RemoveUser() },
     { "Get All Books", () => GetAllBooks() },
+    { "Get All Users", () => GetAllUsers() },
 };
 
+User? loggedInUser = null;
 Dictionary<string, Action> loginMenuActions = new Dictionary<string, Action>
 {
     { 
         "Login as User", 
-        () => DisplayMenu(userMenuActions, "User Menu")
+        () => DisplayMenu(GetAllUsersForLogIn(), "Select User")
     },
     { 
         "Login as Admin", 
@@ -83,6 +78,7 @@ void DisplayMenu(Dictionary<string, Action> menuActions, string title)
                 var action = menuActions.Values.ElementAt(selectedIndex);
                 Console.Clear(); Console.WriteLine("\x1b[3J");
                 action.Invoke();
+                ConfirmAction();
                 break;
             case ConsoleKey.Q:
                 return;
@@ -96,36 +92,125 @@ void DisplayMenu(Dictionary<string, Action> menuActions, string title)
 void AddBook()
 {
     Console.WriteLine("Book adding not implemented");
-    ConfirmAction();
 }
 
-void RemoveBook()
+Dictionary<string, Action> GetAllBooksForRemove()
 {
-    Console.Write("Enter book ID: ");
-    if (!int.TryParse(Console.ReadLine(), out int bookId))
+    var books = bookService.GetAllBooks();
+    Dictionary<string, Action> bookRemovalActions = new Dictionary<string, Action>();
+    foreach (var book in books)
     {
-        Console.WriteLine("Invalid book ID.");
-        return;
+        bookRemovalActions.Add(book.ToString(), () =>
+        {
+            RemoveBook(book);
+        });
     }
+    return bookRemovalActions;
+}
 
-    var book = bookService.GetBookById(bookId);
-    if (book == null)
-    {
-        Console.WriteLine("Book not found.");
-        return;
-    }
-
+void RemoveBook(Book bookToRemove)
+{
     try
     {
-        bookService.RemoveBook(book);
-        Console.WriteLine($"Book removed: {book.Title} by {book.Author}");
+        bookService.RemoveBook(bookToRemove);
+        Console.WriteLine($"Book removed: {bookToRemove.Title} by {bookToRemove.Author}");
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Error removing book: {ex.Message}");
     }
+}
 
-    ConfirmAction();
+void AddUser()
+{
+    var users = userService.GetAllUsers();
+    int userId = 0;
+    if (users.Count() > 0)
+    {
+        userId = users.Max(u => u.Id) + 1;
+    }
+    else 
+    {
+        userId = 1;
+    }
+
+    try
+    {
+        userService.AddUser(
+            new User 
+            { 
+                Name = $"User{userId}", 
+                Email = $"user{userId}@email",
+                PhoneNumber = $"123456789{userId}",
+                Login = $"user{userId}",
+                Password = $"password{userId}"
+            }
+        );
+        Console.WriteLine($"User added: User{userId} with email user{userId}@email");
+    }
+    catch (ArgumentException ex)
+    {
+        Console.WriteLine($"Error adding user: {ex.Message}");
+        return;
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Error adding user: {ex.Message}");
+        return;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unexpected error: {ex.Message}");
+        return;
+    }
+}
+
+void RemoveUser()
+{
+    Console.Write("Enter user ID: ");
+    if (!int.TryParse(Console.ReadLine(), out int userId))
+    {
+        Console.WriteLine("Invalid user ID.");
+        return;
+    }
+    var user = userService.GetUserById(userId);
+    if (user == null)
+    {
+        Console.WriteLine("User not found.");
+        return;
+    }
+
+    try
+    {
+        userService.RemoveUser(user);
+        Console.WriteLine($"User removed: {user.Name}");
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Error removing user: {ex.Message} It may not exist.");
+        return;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unexpected error: {ex.Message}");
+        return;
+    }
+}
+
+void GetAllUsers()
+{
+    var users = userService.GetAllUsers();
+    if (users.Count() > 0)
+    {
+        foreach (var user in users)
+        {
+            Console.WriteLine(user);
+        }
+    }
+    else
+    {
+        Console.WriteLine("No users found.");
+    }
 }
 
 #endregion
@@ -146,11 +231,52 @@ void GetAllBooks()
     {
         Console.WriteLine("No books found.");
     }
-    
-    ConfirmAction();
+}
+
+void GetAllBooksByGenre()
+{
+    Console.Write("Enter genre: ");
+    string genre = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(genre))
+    {
+        Console.WriteLine("Genre cannot be empty.");
+        return;
+    }
+    var books = bookService.GetBooksByGenre(genre);
+    if (books.Count() > 0)
+    {
+        foreach (var book in books)
+        {
+            Console.WriteLine(book);
+        }
+    }
+    else
+    {
+        Console.WriteLine($"No books found for genre: {genre}");
+    }
 }
 
 #endregion
+
+Dictionary<string, Action> GetAllUsersForLogIn()
+{
+    var users = userService.GetAllUsers();
+    Dictionary<string, Action> userLoginActions = new Dictionary<string, Action>();
+    foreach (var user in users)
+    {
+        userLoginActions.Add(user.Name, () =>
+        {
+            LogInUser(user);
+        });
+    }
+    return userLoginActions;
+}
+
+void LogInUser(User user)
+{
+    loggedInUser = user;
+    DisplayMenu(userMenuActions, $"{loggedInUser?.Name} Menu");
+}
 
 void ConfirmAction()
 {

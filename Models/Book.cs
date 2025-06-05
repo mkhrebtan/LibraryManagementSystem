@@ -11,104 +11,28 @@ namespace LibraryManagementSystem.Models;
 [Index(nameof(Title), nameof(Author), IsUnique = true)]
 public class Book
 {
-#region Properties
-
-    private int _id;
+    #region Properties
 
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id
-    {
-        get => _id;
-        private set
-        {
-            if (value < 0)
-                throw new ArgumentException("ID cannot be negative.");
-            _id = value;
-        }
-    }
+    public int Id { get; private set; }
+    public string Title { get; set; } = string.Empty;
+    public string Genre { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
+    public int PublicationYear { get; set; }
+    public int PageCount { get; set; }
+    public bool IsAvailable { get; set; } = true;
 
-    private string _title = "";
-    public required string Title
-    {
-        get => _title;
-        set
-        {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentException("Title cannot be null or empty.");
-            _title = value;
-        }
-    }
-
-    private string _genre = "";
-    public required string Genre
-    {
-        get => _genre;
-        set
-        {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentException("Genre cannot be null or empty.");
-            _genre = value;
-        }
-    }
-
-    private string _author = "";
-    public required string Author
-    {
-        get => _author;
-        set
-        {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentException("Author cannot be null or empty.");
-            _author = value;
-        }
-    }
-
-    private int _publicationYear;
-    public required int PublicationYear
-    {
-        get => _publicationYear;
-        set
-        {
-            if (value < 0)
-                throw new ArgumentException("Publication year cannot be negative.");
-            if (value > DateTime.Now.Year)
-                throw new ArgumentException("Publication year cannot be in the future.");
-            _publicationYear = value;
-        }
-    }
-
-    private int _pageCount;
-    public required int PageCount
-    {
-        get => _pageCount;
-        set
-        {
-            if (value < 0)
-                throw new ArgumentException("Page count must be positive.");
-            _pageCount = value;
-        }
-    }
-
-    private bool _isAvailable = true;
-
-    [DefaultValue(true)]
-    public bool IsAvailable
-    {
-        get => _isAvailable;
-        private set => _isAvailable = value;
-    }
-    
-#endregion       
+    #endregion
 
     public override string ToString()
     {
        var asciiArt = @$" 
             _______
-           /      /, ""{_title}"" ({_id})
-          /      //  By {_author}, {_publicationYear}
-         /______//   {_pageCount} pages
-        (______(/    Genre: {_genre}
-        Available: {(_isAvailable ? "Yes" : "No")}";
+           /      /, ""{Title}"" ({Id})
+          /      //  By {Author}, {PublicationYear}
+         /______//   {PageCount} pages
+        (______(/    Genre: {Genre}
+        Available: {(IsAvailable ? "Yes" : "No")}";
 
        return asciiArt;
     }

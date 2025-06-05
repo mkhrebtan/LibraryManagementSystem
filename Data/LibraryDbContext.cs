@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore;
 using LibraryManagementSystem.Models;
 using Microsoft.Extensions.Configuration;
+using LibraryManagementSystem.Data.Configurations;
 
 namespace LibraryManagementSystem.Data;
 
@@ -28,9 +29,9 @@ public class LibraryDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Book>()
-            .Property(b => b.IsAvailable)
-            .HasDefaultValue(true);
+        modelBuilder.ApplyConfiguration(new BookConfiguration());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new BookLoanConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }

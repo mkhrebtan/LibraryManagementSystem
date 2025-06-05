@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Models;
 
-[Index(nameof(Title), nameof(Author), IsUnique = true)]
 public class Book
 {
     #region Properties
@@ -21,6 +20,8 @@ public class Book
     public int PublicationYear { get; set; }
     public int PageCount { get; set; }
     public bool IsAvailable { get; set; } = true;
+
+    public List<BookLoan> BookLoans { get; set; } = new List<BookLoan>();
 
     #endregion
 

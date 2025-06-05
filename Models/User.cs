@@ -19,6 +19,8 @@ public class User
     public string Login { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
 
+    public List<BookLoan> BookLoans { get; set; } = new List<BookLoan>();
+
     #endregion
 
     public override string ToString()

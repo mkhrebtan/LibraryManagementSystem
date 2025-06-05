@@ -18,18 +18,27 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
-        public IEnumerable<User> GetAllUsers()
+        public IEnumerable<User> GetAll()
         {
             return _context.Users.AsNoTracking().ToList();
         }
 
-        public User? GetUserById(int id)
+        public User? GetById(int id)
         {
             return _context.Users.Find(id);
         }
 
-        public void AddUser(User user)
+        public void Add(string name, string email, string phoneNumber, string login, string password)
         {
+            var user = new User
+            {
+                Name = name,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                Login = login,
+                Password = password
+            };
+
             try
             {
                 _context.Users.Add(user);
@@ -41,8 +50,10 @@ namespace LibraryManagementSystem.Services
             }
         }
 
-        public void RemoveUser(User userToDelete)
+        public void Remove(int userId)
         {
+            var userToDelete = _context.Users.Find(userId) ?? throw new ArgumentException("User not found.");
+            
             try
             {
                 _context.Users.Remove(userToDelete);
@@ -50,7 +61,7 @@ namespace LibraryManagementSystem.Services
             }
             catch (DbUpdateException ex)
             {
-                throw new InvalidOperationException("Failed to remove user from database. It may not exist.", ex);
+                throw new InvalidOperationException("Failed to remove user from database", ex);
             }
         }
     }

@@ -18,23 +18,37 @@ namespace LibraryManagementSystem.Services
             _context = context;
         }
 
-        public IEnumerable<Book> GetAllBooks()
+        public IEnumerable<Book> GetAll()
         {
             return _context.Books.AsNoTracking().ToList();
         }
 
-        public Book? GetBookById(int id)
+        public Book? GetById(int id)
         {
             return _context.Books.Find(id);
         }
 
-        public IEnumerable<Book> GetBooksByGenre(string genre)
+        public IEnumerable<Book> GetByGenre(string genre)
         {
             return _context.Books.AsNoTracking().Where(b => b.Genre.ToLower().Equals(genre.ToLower())).ToList();
         }
 
-        public void AddBook(Book book)
+        public IEnumerable<Book> GetAllAvailable()
         {
+            return _context.Books.AsNoTracking().Where(b => b.IsAvailable).ToList();
+        }
+
+        public void Add(string title, string genre, string author, int publicationYear, int pageCount)
+        {
+            var book = new Book
+            {
+                Title = title,
+                Genre = genre,
+                Author = author,
+                PublicationYear = publicationYear,
+                PageCount = pageCount
+            };
+
             try
             {
                 _context.Books.Add(book);
@@ -46,8 +60,10 @@ namespace LibraryManagementSystem.Services
             }
         }
 
-        public void RemoveBook(Book bookToDelete)
-        {  
+        public void Remove(int bookId)
+        {
+            var bookToDelete = GetById(bookId) ?? throw new ArgumentException("Book not found");
+
             try
             {
                 _context.Books.Remove(bookToDelete);

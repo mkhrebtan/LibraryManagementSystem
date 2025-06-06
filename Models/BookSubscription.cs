@@ -14,7 +14,7 @@ namespace LibraryManagementSystem.Models
         public int BookId { get; set; }
         public int UserId { get; set; }
         public DateTime SubscribedAt { get; set; }
-        public bool IsNotified { get; set; }
+        public bool IsNotified { get; set; } = false;
 
         public Book Book { get; set; } = null!;
         public User User { get; set; } = null!;

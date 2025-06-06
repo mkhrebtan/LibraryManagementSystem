@@ -32,6 +32,7 @@ public class LibraryDbContext : DbContext
         modelBuilder.ApplyConfiguration(new BookConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
         modelBuilder.ApplyConfiguration(new BookLoanConfiguration());
+        modelBuilder.ApplyConfiguration(new BookSubscriptionConfiguration());
 
         base.OnModelCreating(modelBuilder);
     }
@@ -39,4 +40,5 @@ public class LibraryDbContext : DbContext
     public DbSet<Book> Books { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<BookLoan> BookLoans { get; set; } = null!;
+    public DbSet<BookSubscription> BookSubscriptions { get; set; } = null!;
 }

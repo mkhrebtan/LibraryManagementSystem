@@ -22,6 +22,7 @@ public class Book
     public bool IsAvailable { get; set; } = true;
 
     public List<BookLoan> BookLoans { get; set; } = new List<BookLoan>();
+    public List<BookSubscription> BookSubscriptions { get; set; } = new List<BookSubscription>();
 
     #endregion
 

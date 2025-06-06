@@ -20,6 +20,7 @@ public class User
     public string Password { get; set; } = string.Empty;
 
     public List<BookLoan> BookLoans { get; set; } = new List<BookLoan>();
+    public List<BookSubscription> BookSubscriptions { get; set; } = new List<BookSubscription>();
 
     #endregion
 

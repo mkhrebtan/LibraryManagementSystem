@@ -12,6 +12,10 @@ namespace LibraryManagementSystem.Data.Configurations
             builder.HasMany(u => u.BookLoans)
                 .WithOne(bl => bl.User)
                 .HasForeignKey(bl => bl.UserId);
+
+            builder.HasMany(u => u.BookSubscriptions)
+                .WithOne(bs => bs.User)
+                .HasForeignKey(bs => bs.UserId);
         }
     }
 }

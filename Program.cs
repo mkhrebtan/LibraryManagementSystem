@@ -7,7 +7,8 @@ using LibraryManagementSystem.Services;
 LibraryDbContext libraryDbContext = new LibraryDbContext();
 BookService bookService = new BookService(libraryDbContext);
 UserService userService = new UserService(libraryDbContext);
-LoanService loanService = new LoanService(libraryDbContext);
+SubscriptionService subscriptionService = new SubscriptionService(libraryDbContext);
+LoanService loanService = new LoanService(libraryDbContext, subscriptionService);
 
 User? loggedInUser = null;
 
@@ -18,7 +19,9 @@ Dictionary<string, Action> userMenuActions = new Dictionary<string, Action>
     { "Loan Book", () => LoanBook() },
     { "Return Book", () => ReturnBook() },
     { "Loaned Books", () => GetLoanedBooks() },
-    { "Loan History", () => GetLoanHistory() }
+    { "Loan History", () => GetLoanHistory() },
+    { "Subscribe to Book", () => SubscribeToBookAvailability() },
+    { "Unsubscribe to Book", () => UnsubscribeToBookAvailability() }
 };
 
 Dictionary<string, Action> adminMenuActions = new Dictionary<string, Action>
@@ -307,6 +310,73 @@ void GetLoanHistory()
     }
 }
 
+void SubscribeToBookAvailability()
+{
+    var notAvailableBooks = bookService.GetAll().Where(b => b.IsAvailable == false);
+    if (notAvailableBooks.Count() == 0)
+    {
+        Console.WriteLine("All books are available. No need to subscribe.");
+        return;
+    }
+    var subscribeBookMenu = GetBookMenu(notAvailableBooks, BookAction.Subscribe);
+    DisplayMenu(subscribeBookMenu, "Select Book to Subscribe for Availability");
+}
+
+void SubscribeToBookAvailabilityAction(Book book)
+{
+    try
+    {
+        subscriptionService.Subscribe(book.Id, loggedInUser!.Id);
+        Console.WriteLine($"Subscribed to book availability: {book.Title} by {book.Author}.");
+    }
+    catch (ArgumentException ex)
+    {
+        Console.WriteLine($"Error subscribing to book: {ex.Message}");
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Error subscribing to book: {ex.Message}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unexpected error: {ex.Message}");
+    }
+}
+
+void UnsubscribeToBookAvailability()
+{
+    var userSubscriptions = subscriptionService.GetUserSubscriptions(loggedInUser!.Id);
+    if (userSubscriptions.Count() == 0)
+    {
+        Console.WriteLine("No subscriptions found.");
+        return;
+    }
+    var subscribedBooks = userSubscriptions.Select(s => s.Book).ToList();
+    var unsubscribeBookMenu = GetBookMenu(subscribedBooks, BookAction.Unsubscribe);
+    DisplayMenu(unsubscribeBookMenu, "Select Book to Unsubscribe from Availability");
+}
+
+void UnsubscribeToBookAvailabilityAction(Book book)
+{
+    try
+    {
+        subscriptionService.Unsubscribe(book.Id, loggedInUser!.Id);
+        Console.WriteLine($"Unsubscribed from book availability: {book.Title} by {book.Author}.");
+    }
+    catch (ArgumentException ex)
+    {
+        Console.WriteLine($"Error unsubscribing from book: {ex.Message}");
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.WriteLine($"Error unsubscribing from book: {ex.Message}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unexpected error: {ex.Message}");
+    }
+}
+
 #endregion
 
 void DisplayMenu(Dictionary<string, Action> menuActions, string title)
@@ -389,6 +459,12 @@ Dictionary<string, Action> GetBookMenu(IEnumerable<Book> booksCollection, BookAc
                 case BookAction.Return:
                     ReturnBookAction(book);
                     break;
+                case BookAction.Subscribe:
+                    SubscribeToBookAvailabilityAction(book);
+                    break;
+                case BookAction.Unsubscribe:
+                    UnsubscribeToBookAvailabilityAction(book);
+                    break;
             }
         });
     }
@@ -413,5 +489,7 @@ enum BookAction
     Add,
     Remove,
     Loan,
-    Return
+    Return,
+    Subscribe,
+    Unsubscribe
 }

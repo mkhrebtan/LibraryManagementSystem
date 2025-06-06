@@ -12,10 +12,12 @@ namespace LibraryManagementSystem.Services
     public class LoanService
     {
         private readonly LibraryDbContext _context;
+        private readonly SubscriptionService _subscriptionService;
 
-        public LoanService(LibraryDbContext context)
+        public LoanService(LibraryDbContext context, SubscriptionService subscriptionService)
         {
             _context = context;
+            _subscriptionService = subscriptionService;
         }
 
         public IEnumerable<BookLoan> GetForUser(int userId)
@@ -102,6 +104,7 @@ namespace LibraryManagementSystem.Services
             {
                 _context.BookLoans.Update(bookLoan);
                 UpdateBookAvailability(bookId, true);
+                _subscriptionService.NotifySubscribers(bookId);
                 _context.SaveChanges();
             }
             catch (DbUpdateException ex)

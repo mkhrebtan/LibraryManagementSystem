@@ -1,14 +1,24 @@
-﻿using LibraryManagementSystem.Data;
-using LibraryManagementSystem.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using LibraryManagementSystem.Services;
+﻿using LibraryManagement.Domain.Models;
+using LibraryManagement.Domain.Repos;
+using LibraryManagement.Application.Services;
+using LibraryManagement.Persistence.Postgres;
+using LibraryManagement.Persistence.Postgres.Repos;
+using Microsoft.EntityFrameworkCore;    
 
+// context
 LibraryDbContext libraryDbContext = new LibraryDbContext();
-BookService bookService = new BookService(libraryDbContext);
-UserService userService = new UserService(libraryDbContext);
-SubscriptionService subscriptionService = new SubscriptionService(libraryDbContext);
-LoanService loanService = new LoanService(libraryDbContext, subscriptionService);
+
+// repositories
+IBookRepository bookRepository = new BookRepository(libraryDbContext);  
+IUserRepository userRepository = new UserRepository(libraryDbContext);
+ISubscriptionRepository subscriptionRepository = new SubscriptionRepository(libraryDbContext);
+ILoanRepository loanRepository = new LoanRepository(libraryDbContext);
+
+// services
+BookService bookService = new BookService(bookRepository);
+UserService userService = new UserService(userRepository);
+SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository);
+LoanService loanService = new LoanService(loanRepository, bookRepository, userRepository, subscriptionService);
 
 User? loggedInUser = null;
 
@@ -295,7 +305,7 @@ void GetLoanedBooks()
 
 void GetLoanHistory()
 {
-    var loans = loanService.GetForUser(loggedInUser!.Id);
+    var loans = loanService.GetUserHistory(loggedInUser!.Id);
     if (loans.Count() > 0)
     {
         foreach (var loan in loans)

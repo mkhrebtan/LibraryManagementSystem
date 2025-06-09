@@ -1,8 +1,15 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.5.2.0
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagementSystem", "LibraryManagementSystem.csproj", "{E4E7692D-7697-29B1-0BCC-078270F13D10}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.ConsoleApp", "LibraryManagement.ConsoleApp\LibraryManagement.ConsoleApp.csproj", "{8AA60B4F-4C72-4BB4-87A0-98B3334C5AD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Application", "LibraryManagement.Application\LibraryManagement.Application.csproj", "{DEC92226-14F8-4B48-99E3-C2A018CF32A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Persistence.Postgres", "LibraryManagement.Persistence.Postgres\LibraryManagement.Persistence.Postgres.csproj", "{4B3046B0-A413-40BF-B98E-1EF415714833}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibraryManagement.Domain", "LibraryManagement.Domain\LibraryManagement.Domain.csproj", "{60BE3076-3162-43DE-8BE7-C8ECAAFCF641}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -10,15 +17,27 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E4E7692D-7697-29B1-0BCC-078270F13D10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E4E7692D-7697-29B1-0BCC-078270F13D10}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E4E7692D-7697-29B1-0BCC-078270F13D10}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E4E7692D-7697-29B1-0BCC-078270F13D10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AA60B4F-4C72-4BB4-87A0-98B3334C5AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AA60B4F-4C72-4BB4-87A0-98B3334C5AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AA60B4F-4C72-4BB4-87A0-98B3334C5AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AA60B4F-4C72-4BB4-87A0-98B3334C5AD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEC92226-14F8-4B48-99E3-C2A018CF32A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEC92226-14F8-4B48-99E3-C2A018CF32A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEC92226-14F8-4B48-99E3-C2A018CF32A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEC92226-14F8-4B48-99E3-C2A018CF32A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B3046B0-A413-40BF-B98E-1EF415714833}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B3046B0-A413-40BF-B98E-1EF415714833}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B3046B0-A413-40BF-B98E-1EF415714833}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B3046B0-A413-40BF-B98E-1EF415714833}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60BE3076-3162-43DE-8BE7-C8ECAAFCF641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60BE3076-3162-43DE-8BE7-C8ECAAFCF641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60BE3076-3162-43DE-8BE7-C8ECAAFCF641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60BE3076-3162-43DE-8BE7-C8ECAAFCF641}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {FA3E48B2-871F-4366-B43D-CC4147F18605}
+		SolutionGuid = {FAEF9355-F7CA-4EF2-A541-4FF098C64F64}
 	EndGlobalSection
 EndGlobal

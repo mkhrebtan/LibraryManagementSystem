@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore;
-using LibraryManagementSystem.Models;
+using LibraryManagement.Persistence.Postgres.Configurations;
+using LibraryManagement.Domain.Models;
 using Microsoft.Extensions.Configuration;
-using LibraryManagementSystem.Data.Configurations;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
-namespace LibraryManagementSystem.Data;
+namespace LibraryManagement.Persistence.Postgres;
 
 public class LibraryDbContext : DbContext
 {
@@ -19,12 +20,11 @@ public class LibraryDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var builder = new ConfigurationBuilder()
-            .AddUserSecrets<Program>();
-        var configuration = builder.Build();
-        var secretProvider = configuration.Providers.First();
-        secretProvider.TryGet("ConnectionStrings:PostDbConnection", out string? connectionString);
-        optionsBuilder.UseNpgsql(connectionString);
+        //var builder = new ConfigurationBuilder();
+        //var configuration = builder.Build();
+        //var secretProvider = configuration.Providers.First();
+        //secretProvider.TryGet("ConnectionStrings:PostDbConnection", out string? connectionString);
+        optionsBuilder.UseNpgsql("Host=localhost;Database=Library;Username=developer_user;Password=pass_developer");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

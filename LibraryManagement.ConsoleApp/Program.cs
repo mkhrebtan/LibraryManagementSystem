@@ -1,12 +1,17 @@
-﻿using LibraryManagement.Domain.Models;
+﻿using LibraryManagement.Application.Services;
+using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
-using LibraryManagement.Application.Services;
 using LibraryManagement.Persistence.Postgres;
 using LibraryManagement.Persistence.Postgres.Repos;
-using Microsoft.EntityFrameworkCore;    
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
+var configuration = new ConfigurationBuilder()
+    .AddUserSecrets<Program>()
+    .Build();
 
 // context
-LibraryDbContext libraryDbContext = new LibraryDbContext();
+LibraryDbContext libraryDbContext = new LibraryDbContext(configuration);
 
 // repositories
 IBookRepository bookRepository = new BookRepository(libraryDbContext);  

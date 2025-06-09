@@ -14,17 +14,16 @@ namespace LibraryManagement.Persistence.Postgres;
 
 public class LibraryDbContext : DbContext
 {
-    public LibraryDbContext()
+    private readonly IConfigurationRoot _configuration;
+
+    public LibraryDbContext(IConfigurationRoot configuration)
     {
+        _configuration = configuration;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        //var builder = new ConfigurationBuilder();
-        //var configuration = builder.Build();
-        //var secretProvider = configuration.Providers.First();
-        //secretProvider.TryGet("ConnectionStrings:PostDbConnection", out string? connectionString);
-        optionsBuilder.UseNpgsql("Host=localhost;Database=Library;Username=developer_user;Password=pass_developer");
+        optionsBuilder.UseNpgsql(_configuration.GetConnectionString("LibraryDb"));
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

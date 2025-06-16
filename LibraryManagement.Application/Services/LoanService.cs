@@ -50,9 +50,9 @@ namespace LibraryManagement.Application.Services
 
         public void StartBookLoan(int userId, int bookId)
         {
-            var user = _userRepository.GetById(userId) 
+            var user = _userRepository.GetById(userId)
                 ?? throw new ArgumentException("User not found");
-            var book = _bookRepository.GetById(bookId) 
+            var book = _bookRepository.GetById(bookId)
                 ?? throw new ArgumentException("Book not found");
 
             if (!book.IsAvailable)
@@ -69,6 +69,9 @@ namespace LibraryManagement.Application.Services
             };
 
             _loanRepository.Add(bookLoan);
+
+            book.IsAvailable = false;
+            _bookRepository.Update(book);
         }
 
         public void EndBookLoan(int loanId)

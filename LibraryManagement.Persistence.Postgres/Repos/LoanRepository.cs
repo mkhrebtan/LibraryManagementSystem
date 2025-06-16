@@ -39,7 +39,6 @@ namespace LibraryManagement.Persistence.Postgres.Repos
         {
             return _context.BookLoans
                 .Where(bl => bl.UserId == userId && bl.BookId == bookId && bl.ReturnDate == null)
-                .AsNoTracking()
                 .FirstOrDefault();
         }
 

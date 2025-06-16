@@ -7,6 +7,7 @@ using System.IO;
 using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.BookAvailability;
 using LibraryManagement.Domain.Repos;
+using LibraryManagement.Infrastructure.Notifications;
 
 namespace LibraryManagement.Application.Services;
 
@@ -82,40 +83,32 @@ public class SubscriptionService : IBookAvailabilityPublisher
             return;
         }
 
-        try
-        {
-            using (var writer = new StreamWriter(@"C:\Dev\LibraryManagementSystem\LibraryManagement.Application\NotificationsLogs\notifications.txt", append: true))
-            {
-                foreach (var subscription in subscriptions)
-                {
-                    writer.WriteLine($"{DateTime.Now} | Notification for User '{subscription.User.Name}' ({subscription.User.Email}): Book '{book.Title}' is now available for loan.");
-                    subscription.IsNotified = true;
-                    _subscriptionRepository.Update(subscription);
-                }
-            }
-        }
-        catch (Exception ex) when (
-            ex is UnauthorizedAccessException ||
-            ex is DirectoryNotFoundException ||
-            ex is IOException)
+        var notifier = new NotificationService();
+        foreach (var subscription in subscriptions)
         {
             try
             {
-                foreach (var subscription in subscriptions)
+                notifier.Update(book, subscription.User);
+                subscription.IsNotified = true;
+                _subscriptionRepository.Update(subscription);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // TODO: Handle notification failure (e.g., log the error, retry logic, etc.)
+                try
                 {
-                    subscription.IsNotified = true;
-                    _subscriptionRepository.Update(subscription);
+                    foreach (var sub in subscriptions)
+                    {
+                        sub.IsNotified = true;
+                        _subscriptionRepository.Update(sub);
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // TODO: Handle failure to update subscription status (e.g., log the error)
                 }
             }
-            catch (Exception dbEx)
-            {
-                throw new InvalidOperationException("Failed to update subscription status.", dbEx);
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("Failed to notify subscribers.", ex);
-        }
+        }  
     }
 
     public IEnumerable<BookSubscription> GetUserSubscriptions(int userId)

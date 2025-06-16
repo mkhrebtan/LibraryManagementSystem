@@ -3,7 +3,6 @@ using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
 using LibraryManagement.Persistence.Postgres;
 using LibraryManagement.Persistence.Postgres.Repos;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 var configuration = new ConfigurationBuilder()

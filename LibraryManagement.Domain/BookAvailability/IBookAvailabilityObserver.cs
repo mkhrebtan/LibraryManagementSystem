@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LibraryManagement.Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,5 @@ namespace LibraryManagement.Domain.BookAvailability;
 /// </summary>
 public interface IBookAvailabilityObserver
 {
-    void NotifyBookAvailable(int bookId, string bookTitle);
+    void Update(Book book, User user);
 }

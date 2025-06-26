@@ -4,27 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.Persistence.Postgres.Repos
 {
-    public class LoanRepository : ILoanRepository
+    public class LoanRepository : GenericRepository<BookLoan>, ILoanRepository
     {
-        private readonly LibraryDbContext _context;
-
-        public LoanRepository(LibraryDbContext context)
-        {
-            _context = context;
-        }
-
-        public void Add(BookLoan entity)
-        {
-            try
-            {
-                _context.BookLoans.Add(entity);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to add book loan to database.", ex);
-            }
-        }
+        public LoanRepository(LibraryDbContext context) : base(context) { } 
 
         public IEnumerable<BookLoan> GetActiveLoansForUser(int userId)
         {
@@ -42,15 +24,6 @@ namespace LibraryManagement.Persistence.Postgres.Repos
                 .FirstOrDefault();
         }
 
-        public IEnumerable<BookLoan> GetAll()
-        {
-            return _context.BookLoans
-                .Include(bl => bl.Book)
-                .Include(bl => bl.User)
-                .AsNoTracking()
-                .ToList();
-        }
-
         public IEnumerable<BookLoan> GetBookHistory(int bookId)
         {
             return _context.BookLoans
@@ -60,15 +33,6 @@ namespace LibraryManagement.Persistence.Postgres.Repos
                 .ToList();
         }
 
-        public BookLoan? GetById(int id)
-        {
-            return _context.BookLoans
-                .Include(bl => bl.Book)
-                .Include(bl => bl.User)
-                .AsNoTracking()
-                .FirstOrDefault(bl => bl.Id == id);
-        }
-
         public IEnumerable<BookLoan> GetUserHistory(int userId)
         {
             return _context.BookLoans
@@ -76,32 +40,6 @@ namespace LibraryManagement.Persistence.Postgres.Repos
                 .Include(bl => bl.Book)
                 .AsNoTracking()
                 .ToList();
-        }
-
-        public void Remove(BookLoan entity)
-        {
-            try
-            { 
-                _context.BookLoans.Remove(entity);
-                _context.SaveChanges();
-            }
-            catch (DbUpdateException ex)
-            {
-                throw new InvalidOperationException("Failed to remove book loan from database.", ex);
-            }
-        }
-
-        public void Update(BookLoan entity)
-        {
-            try
-            {
-                _context.BookLoans.Update(entity);
-                _context.SaveChanges();
-            }
-            catch (DbUpdateException ex)
-            {
-                throw new InvalidOperationException("Failed to update book loan in database.", ex);
-            }
         }
     }
 }

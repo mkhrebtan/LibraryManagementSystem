@@ -1,6 +1,7 @@
 ﻿using LibraryManagement.Application.Services;
 using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
+using LibraryManagement.Domain.UnitOfWork;
 using LibraryManagement.Persistence.Postgres;
 using LibraryManagement.Persistence.Postgres.Repos;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +11,10 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 // context
-LibraryDbContext libraryDbContext = new LibraryDbContext(configuration);
+LibraryDbContext libraryDbContext = new LibraryDbContext();
+
+// unit of work
+IUnitOfWork unitOfWork = new UnitOfWork<LibraryDbContext>(libraryDbContext);
 
 // repositories
 IBookRepository bookRepository = new BookRepository(libraryDbContext);  
@@ -19,10 +23,10 @@ ISubscriptionRepository subscriptionRepository = new SubscriptionRepository(libr
 ILoanRepository loanRepository = new LoanRepository(libraryDbContext);
 
 // services
-BookService bookService = new BookService(bookRepository);
-UserService userService = new UserService(userRepository);
-SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository);
-LoanService loanService = new LoanService(loanRepository, bookRepository, userRepository, subscriptionService);
+BookService bookService = new BookService(bookRepository, unitOfWork);
+UserService userService = new UserService(userRepository, unitOfWork);
+SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository, unitOfWork);
+LoanService loanService = new LoanService(loanRepository, bookRepository, userRepository, subscriptionService, unitOfWork);
 
 User? loggedInUser = null;
 

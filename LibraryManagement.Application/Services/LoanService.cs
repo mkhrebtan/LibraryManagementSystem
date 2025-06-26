@@ -1,27 +1,30 @@
-﻿using System;
+﻿using LibraryManagement.Domain.Models;
+using LibraryManagement.Domain.Repos;
+using LibraryManagement.Domain.UnitOfWork;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibraryManagement.Domain.Models;
-using LibraryManagement.Domain.Repos;
 
 namespace LibraryManagement.Application.Services
 {
     public class LoanService
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILoanRepository _loanRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IUserRepository _userRepository;
         private readonly SubscriptionService _subscriptionService;
 
         public LoanService(ILoanRepository loanRepository, IBookRepository bookRepository, IUserRepository userRepository, 
-            SubscriptionService subscriptionService)
+            SubscriptionService subscriptionService, IUnitOfWork unitOfWork)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
             _userRepository = userRepository;
             _subscriptionService = subscriptionService;
+            _unitOfWork = unitOfWork;
         }
 
         public IEnumerable<BookLoan> GetUserHistory(int userId)
@@ -68,10 +71,22 @@ namespace LibraryManagement.Application.Services
                 ReturnDate = null
             };
 
+            _unitOfWork.CreateTransaction();
             _loanRepository.Add(bookLoan);
 
             book.IsAvailable = false;
             _bookRepository.Update(book);
+
+            try
+            {
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+            }
+            catch (InvalidOperationException)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
         }
 
         public void EndBookLoan(int loanId)
@@ -86,8 +101,20 @@ namespace LibraryManagement.Application.Services
             bookLoan.ReturnDate = DateTime.UtcNow;
             bookLoan.Book.IsAvailable = true;
 
+            _unitOfWork.CreateTransaction();
             _loanRepository.Update(bookLoan);
             _bookRepository.Update(bookLoan.Book);
+
+            try
+            {
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+            }
+            catch (InvalidOperationException)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
 
             _subscriptionService.NotifySubscribers(bookLoan.Book);
         }
@@ -109,8 +136,19 @@ namespace LibraryManagement.Application.Services
             bookLoan.ReturnDate = DateTime.UtcNow;
             book.IsAvailable = true;
 
+            _unitOfWork.CreateTransaction();
             _loanRepository.Update(bookLoan);
             _bookRepository.Update(book);
+
+            try
+            {   _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+            }
+            catch (InvalidOperationException)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
 
             _subscriptionService.NotifySubscribers(book);
         }

@@ -1,27 +1,31 @@
-﻿using System;
+﻿using LibraryManagement.Domain.BookAvailability;
+using LibraryManagement.Domain.Models;
+using LibraryManagement.Domain.Repos;
+using LibraryManagement.Domain.UnitOfWork;
+using LibraryManagement.Infrastructure.Notifications;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
-using LibraryManagement.Domain.Models;
-using LibraryManagement.Domain.BookAvailability;
-using LibraryManagement.Domain.Repos;
-using LibraryManagement.Infrastructure.Notifications;
 
 namespace LibraryManagement.Application.Services;
 
 public class SubscriptionService : IBookAvailabilityPublisher
 {
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IBookRepository _bookRepository;
     private readonly IUserRepository _userRepository;
 
-    public SubscriptionService(ISubscriptionRepository subscriptionRepository, IBookRepository bookRepository, IUserRepository userRepository)
+    public SubscriptionService(ISubscriptionRepository subscriptionRepository, IBookRepository bookRepository, IUserRepository userRepository,
+        IUnitOfWork unitOfWork)
     {
         _subscriptionRepository = subscriptionRepository;
         _bookRepository = bookRepository;
         _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public void Subscribe(int bookId, int userId)

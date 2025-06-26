@@ -9,6 +9,7 @@ using LibraryManagement.Persistence.Postgres.Configurations;
 using LibraryManagement.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using System.Reflection;
 
 namespace LibraryManagement.Persistence.Postgres;
 
@@ -16,9 +17,11 @@ public class LibraryDbContext : DbContext
 {
     private readonly IConfigurationRoot _configuration;
 
-    public LibraryDbContext(IConfigurationRoot configuration)
+    public LibraryDbContext()
     {
-        _configuration = configuration;
+        _configuration = new ConfigurationBuilder()
+            .AddUserSecrets<LibraryDbContext>()
+            .Build();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

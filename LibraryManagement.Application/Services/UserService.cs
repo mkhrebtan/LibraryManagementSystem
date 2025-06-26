@@ -1,20 +1,23 @@
-﻿using System;
+﻿using LibraryManagement.Domain.Models;
+using LibraryManagement.Domain.Repos;
+using LibraryManagement.Domain.UnitOfWork;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LibraryManagement.Domain.Models;
-using LibraryManagement.Domain.Repos;
 
 namespace LibraryManagement.Application.Services
 {
     public class UserService
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IUserRepository _userRepository;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public IEnumerable<User> GetAll()
@@ -38,13 +41,39 @@ namespace LibraryManagement.Application.Services
                 Password = password
             };
 
+            _unitOfWork.CreateTransaction();
+
             _userRepository.Add(user);
+
+            try
+            {
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+            }
+            catch(InvalidOperationException)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            } 
         }
 
         public void Remove(int userId)
         {
             User userToRemove = _userRepository.GetById(userId) ?? throw new ArgumentException("User not found");
+
+            _unitOfWork.CreateTransaction();
             _userRepository.Remove(userToRemove);
+
+            try
+            {
+                _unitOfWork.SaveChanges();
+                _unitOfWork.CommitTransaction();
+            }
+            catch (InvalidOperationException)
+            {
+                _unitOfWork.RollbackTransaction();
+                throw;
+            }
         }
     }
 }

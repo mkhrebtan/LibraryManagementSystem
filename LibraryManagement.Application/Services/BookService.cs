@@ -5,57 +5,84 @@ using System.Text;
 using System.Threading.Tasks;
 using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
+using LibraryManagement.Domain.UnitOfWork;
 
-namespace LibraryManagement.Application.Services
+namespace LibraryManagement.Application.Services;
+
+public class BookService
 {
-    public class BookService
+    private readonly IBookRepository _bookRepository;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public BookService(IBookRepository bookRepository, IUnitOfWork unitOfWork)
     {
-        private readonly IBookRepository _bookRepository;
+        _bookRepository = bookRepository;
+        _unitOfWork = unitOfWork;
+    }
 
-        public BookService(IBookRepository bookRepository)
+    public IEnumerable<Book> GetAll()
+    {
+        return _bookRepository.GetAll();
+    }
+
+    public Book? GetById(int id)
+    {
+        return _bookRepository.GetById(id);
+    }
+
+    public IEnumerable<Book> GetByGenre(string genre)
+    {
+        var allBooks = _bookRepository.GetAll();
+        return allBooks.Where(b => string.Equals(b.Genre, genre, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    public IEnumerable<Book> GetAllAvailable()
+    {
+        return _bookRepository.GetAllAvailable();
+    }
+
+    public void Add(string title, string genre, string author, int publicationYear, int pageCount)
+    {
+        var book = new Book
         {
-            _bookRepository = bookRepository;
+            Title = title,
+            Genre = genre,
+            Author = author,
+            PublicationYear = publicationYear,
+            PageCount = pageCount
+        };
+
+        _unitOfWork.CreateTransaction();
+        _bookRepository.Add(book);
+
+        try
+        {
+            _unitOfWork.SaveChanges();
+            _unitOfWork.CommitTransaction();
         }
-
-        public IEnumerable<Book> GetAll()
+        catch (InvalidOperationException)
         {
-            return _bookRepository.GetAll();
+            _unitOfWork.RollbackTransaction();
+            throw;
         }
+    }
 
-        public Book? GetById(int id)
+    public void Remove(int bookId)
+    {
+        Book bookToRemove = _bookRepository.GetById(bookId) ?? throw new ArgumentException("Book not found.");
+        
+        _unitOfWork.CreateTransaction();
+        _bookRepository.Remove(bookToRemove);
+
+        try
         {
-            return _bookRepository.GetById(id);
+            _unitOfWork.SaveChanges();
+            _unitOfWork.CommitTransaction();
         }
-
-        public IEnumerable<Book> GetByGenre(string genre)
+        catch (InvalidOperationException)
         {
-            var allBooks = _bookRepository.GetAll();
-            return allBooks.Where(b => string.Equals(b.Genre, genre, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-
-        public IEnumerable<Book> GetAllAvailable()
-        {
-            return _bookRepository.GetAllAvailable();
-        }
-
-        public void Add(string title, string genre, string author, int publicationYear, int pageCount)
-        {
-            var book = new Book
-            {
-                Title = title,
-                Genre = genre,
-                Author = author,
-                PublicationYear = publicationYear,
-                PageCount = pageCount
-            };
-
-            _bookRepository.Add(book);
-        }
-
-        public void Remove(int bookId)
-        {
-            Book bookToRemove = _bookRepository.GetById(bookId) ?? throw new ArgumentException("Book not found.");
-            _bookRepository.Remove(bookToRemove);
+            _unitOfWork.RollbackTransaction();
+            throw;
         }
     }
 }

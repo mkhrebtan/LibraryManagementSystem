@@ -1,14 +1,9 @@
-﻿using LibraryManagement.Domain.BookAvailability;
+﻿using LibraryManagement.Application.Interfaces;
+using LibraryManagement.Domain.BookAvailability;
+using LibraryManagement.Domain.Enums;
 using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
 using LibraryManagement.Domain.UnitOfWork;
-using LibraryManagement.Infrastructure.Notifications;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LibraryManagement.Application.Services;
 
@@ -18,17 +13,23 @@ public class SubscriptionService : IBookAvailabilityPublisher
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IBookRepository _bookRepository;
     private readonly IUserRepository _userRepository;
+    private readonly INotificationService _notificationService;
 
-    public SubscriptionService(ISubscriptionRepository subscriptionRepository, IBookRepository bookRepository, IUserRepository userRepository,
-        IUnitOfWork unitOfWork)
+    public SubscriptionService(
+        ISubscriptionRepository subscriptionRepository, 
+        IBookRepository bookRepository, 
+        IUserRepository userRepository,
+        IUnitOfWork unitOfWork,
+        INotificationService notificationService)
     {
         _subscriptionRepository = subscriptionRepository;
         _bookRepository = bookRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _notificationService = notificationService;
     }
 
-    public void Subscribe(int bookId, int userId)
+    public void Subscribe(int bookId, int userId, ICollection<NotificationPreference> notificationPreferences)
     {
         var user = _userRepository.GetById(userId) ?? throw new ArgumentException("User not found");
         var book = _bookRepository.GetById(bookId) ?? throw new ArgumentException("Book not found");
@@ -50,10 +51,22 @@ public class SubscriptionService : IBookAvailabilityPublisher
             BookId = book.Id,
             UserId = user.Id,
             SubscribedAt = DateTime.UtcNow,
-            IsNotified = false
+            IsNotified = false,
+            NotificationPreferences = notificationPreferences
         };
 
-        _subscriptionRepository.Add(bookSubscription);
+        try
+        {
+            _unitOfWork.CreateTransaction();
+            _subscriptionRepository.Add(bookSubscription);
+            _unitOfWork.SaveChanges();
+            _unitOfWork.CommitTransaction();
+        }
+        catch (InvalidOperationException)
+        {
+            _unitOfWork.RollbackTransaction();
+            throw;
+        }
     }
 
     public void Unsubscribe(int bookId, int userId)
@@ -68,14 +81,36 @@ public class SubscriptionService : IBookAvailabilityPublisher
             throw new InvalidOperationException("User is not subscribed to this book.");
         }
 
-        _subscriptionRepository.Remove(existingSubscription);
+        try
+        {
+            _unitOfWork.CreateTransaction();
+            _subscriptionRepository.Remove(existingSubscription);
+            _unitOfWork.SaveChanges();
+            _unitOfWork.CommitTransaction();
+        }
+        catch (InvalidOperationException)
+        {
+            _unitOfWork.RollbackTransaction();
+            throw;
+        }
     }
 
     public void Unsubscribe(int subscriptionId)
     {
         var subscription = _subscriptionRepository.GetById(subscriptionId) ?? throw new ArgumentException("Subscription not found.");
 
-        _subscriptionRepository.Remove(subscription);
+        try
+        {
+            _unitOfWork.CreateTransaction();
+            _subscriptionRepository.Remove(subscription);
+            _unitOfWork.SaveChanges();
+            _unitOfWork.CommitTransaction();
+        }
+        catch (InvalidOperationException)
+        {
+            _unitOfWork.RollbackTransaction();
+            throw;
+        }
     }
 
     public void NotifySubscribers(Book book)
@@ -87,32 +122,26 @@ public class SubscriptionService : IBookAvailabilityPublisher
             return;
         }
 
-        var notifier = new NotificationService();
+        try
+        {
+            _unitOfWork.CreateTransaction();
+            foreach (var subscription in subscriptions)
+            {
+                subscription.IsNotified = true;
+            }
+            _unitOfWork.SaveChanges();
+            _unitOfWork.CommitTransaction();
+        }
+        catch (InvalidOperationException)
+        {
+            _unitOfWork.RollbackTransaction();
+            throw;
+        }
+
         foreach (var subscription in subscriptions)
         {
-            try
-            {
-                notifier.Update(book, subscription.User);
-                subscription.IsNotified = true;
-                _subscriptionRepository.Update(subscription);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // TODO: Handle notification failure (e.g., log the error, retry logic, etc.)
-                try
-                {
-                    foreach (var sub in subscriptions)
-                    {
-                        sub.IsNotified = true;
-                        _subscriptionRepository.Update(sub);
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // TODO: Handle failure to update subscription status (e.g., log the error)
-                }
-            }
-        }  
+            _notificationService.Update(book, subscription.User, subscription.NotificationPreferences);
+        }
     }
 
     public IEnumerable<BookSubscription> GetUserSubscriptions(int userId)

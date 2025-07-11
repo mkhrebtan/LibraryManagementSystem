@@ -1,9 +1,5 @@
 ﻿using LibraryManagement.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using LibraryManagement.Domain.Enums;
 
 namespace LibraryManagement.Domain.BookAvailability;
 
@@ -12,5 +8,5 @@ namespace LibraryManagement.Domain.BookAvailability;
 /// </summary>
 public interface IBookAvailabilityObserver
 {
-    void Update(Book book, User user);
+    void Update(Book book, User user, ICollection<NotificationPreference> notificationPreferences);
 }

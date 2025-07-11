@@ -1,15 +1,12 @@
 ﻿using LibraryManagement.Domain.Models;
-using LibraryManagement.Infrastructure.Notifications.Abstraction;
 
-namespace LibraryManagement.Infrastructure.Notifications.Notifiers;
+namespace LibraryManagement.Infrastructure.Notifications.Decorator.Notifiers;
 
 internal class SmsNotifier : NotifierDecorator
 {
-    private readonly string _phoneNumber;
-
-    public SmsNotifier(INotifier wrappee, string phoneNumber) : base(wrappee)
+    public SmsNotifier(INotifier wrappee) 
+        : base(wrappee)
     {
-        _phoneNumber = phoneNumber;
     }
 
     public override void Notify(Book book, User user)
@@ -19,7 +16,7 @@ internal class SmsNotifier : NotifierDecorator
         try
         {
             using var writer = new StreamWriter(@"C:\\Dev\\LibraryManagementSystem\\LibraryManagement.Infrastructure\\Notifications\\Logs\\sms_notifications.txt", append: true);
-            writer.WriteLine($"{DateTime.Now} | Notification for user '{user.Name}' | Phone '{_phoneNumber}': Book '{book.Title}' is now available for loan.");
+            writer.WriteLine($"{DateTime.Now} | Notification for user '{user.Name}' | Phone '{user.PhoneNumber}': Book '{book.Title}' is now available for loan.");
         }
         catch (Exception ex) when (
             ex is UnauthorizedAccessException ||

@@ -1,7 +1,7 @@
 ﻿using LibraryManagement.Domain.Models;
-using LibraryManagement.Infrastructure.Notifications.Abstraction;
+using LibraryManagement.Infrastructure.Notifications.Decorator;
 
-namespace LibraryManagement.Infrastructure.Notifications.Notifiers;
+namespace LibraryManagement.Infrastructure.Notifications.Decorator.Notifiers;
 
 internal class BasicNotifier : INotifier
 {

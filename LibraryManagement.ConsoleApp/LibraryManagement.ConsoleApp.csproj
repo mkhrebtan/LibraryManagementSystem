@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LibraryManagement.Application\LibraryManagement.Application.csproj" />
     <ProjectReference Include="..\LibraryManagement.Domain\LibraryManagement.Domain.csproj" />
+    <ProjectReference Include="..\LibraryManagement.Infrastructure\LibraryManagement.Infrastructure.csproj" />
     <ProjectReference Include="..\LibraryManagement.Persistence.Postgres\LibraryManagement.Persistence.Postgres.csproj" />
   </ItemGroup>
 

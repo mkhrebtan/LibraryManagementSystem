@@ -1,7 +1,10 @@
-﻿using LibraryManagement.Application.Services;
+﻿using LibraryManagement.Application.Interfaces;
+using LibraryManagement.Application.Services;
+using LibraryManagement.Domain.Enums;
 using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
 using LibraryManagement.Domain.UnitOfWork;
+using LibraryManagement.Infrastructure.Notifications;
 using LibraryManagement.Persistence.Postgres;
 using LibraryManagement.Persistence.Postgres.Repos;
 using Microsoft.Extensions.Configuration;
@@ -22,10 +25,13 @@ IUserRepository userRepository = new UserRepository(libraryDbContext);
 ISubscriptionRepository subscriptionRepository = new SubscriptionRepository(libraryDbContext);
 ILoanRepository loanRepository = new LoanRepository(libraryDbContext);
 
+// notification service
+INotificationService notificationService = new NotificationService();
+
 // services
 BookService bookService = new BookService(bookRepository, unitOfWork);
 UserService userService = new UserService(userRepository, unitOfWork);
-SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository, unitOfWork);
+SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository, unitOfWork, notificationService);
 LoanService loanService = new LoanService(loanRepository, bookRepository, userRepository, subscriptionService, unitOfWork);
 
 User? loggedInUser = null;
@@ -342,9 +348,24 @@ void SubscribeToBookAvailability()
 
 void SubscribeToBookAvailabilityAction(Book book)
 {
+    Console.WriteLine("Select notification type:\n\tSMS - enter 1\n\tEmail - enter 2\n\tBoth - enter 3");
+    var notificationInput = Console.ReadLine();
+    if (!int.TryParse(notificationInput, out int notificationType))
+    {
+        notificationType = 2;
+    }
+
+    List<NotificationPreference> notificationPreferences = notificationType switch 
+    {
+        1 => new List<NotificationPreference> { NotificationPreference.SMS },
+        2 => new List<NotificationPreference> { NotificationPreference.Email },
+        3 => new List<NotificationPreference> { NotificationPreference.SMS, NotificationPreference.Email },
+        _ => new List<NotificationPreference> { NotificationPreference.Email }
+    };
+
     try
     {
-        subscriptionService.Subscribe(book.Id, loggedInUser!.Id);
+        subscriptionService.Subscribe(book.Id, loggedInUser!.Id, notificationPreferences);
         Console.WriteLine($"Subscribed to book availability: {book.Title} by {book.Author}.");
     }
     catch (ArgumentException ex)

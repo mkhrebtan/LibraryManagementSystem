@@ -13,7 +13,6 @@ namespace LibraryManagement.Persistence.Postgres.Repos
             return _context.BookSubscriptions
                 .Where(bs => bs.BookId == bookId && !bs.IsNotified)
                 .Include(bs => bs.User)
-                .AsNoTracking()
                 .ToList();
         }
 

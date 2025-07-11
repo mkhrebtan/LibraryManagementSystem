@@ -1,34 +1,26 @@
-﻿using LibraryManagement.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LibraryManagement.Application.Interfaces;
+using LibraryManagement.Domain.Enums;
+using LibraryManagement.Domain.Models;
+using LibraryManagement.Infrastructure.Notifications.Abstraction;
+using LibraryManagement.Infrastructure.Notifications.Notifiers;
 
-namespace LibraryManagement.Infrastructure.Notifications
+namespace LibraryManagement.Infrastructure.Notifications;
+
+public class NotificationService : INotificationService
 {
-    public class NotificationService : IUserNotifier
+    public void Update(Book book, User user, ICollection<NotificationPreference> notificationPreferences)
     {
-        public void Update(Book book, User user)
+        INotifier notifier = new BasicNotifier();
+        foreach (var preference in notificationPreferences)
         {
-            try
+            notifier = preference switch
             {
-                using (var writer = new StreamWriter(@"C:\Dev\LibraryManagementSystem\LibraryManagement.Infrastructure\Notifications\Logs\notifications.txt", append: true))
-                {
-                    writer.WriteLine($"{DateTime.Now} | Notification for User '{user.Name}' ({user.Email}): Book '{book.Title}' is now available for loan.");
-                }
-            }
-            catch (Exception ex) when (
-                ex is UnauthorizedAccessException ||
-                ex is DirectoryNotFoundException ||
-                ex is IOException)
-            {
-                throw new InvalidOperationException("Failed to notify subscribers.", ex);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Unexpected error while notifying subscribers.", ex);
-            }
+                NotificationPreference.SMS => new SmsNotifier(notifier, user.PhoneNumber),
+                NotificationPreference.Email => new EmailNotifier(notifier, user.Email),
+                _ => notifier
+            };
+            
         }
+        notifier.Notify(book, user);
     }
 }

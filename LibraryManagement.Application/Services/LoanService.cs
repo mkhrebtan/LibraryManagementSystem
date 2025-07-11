@@ -69,16 +69,16 @@ namespace LibraryManagement.Application.Services
                 BookId = bookId,
                 LoanDate = DateTime.UtcNow,
                 ReturnDate = null
-            };
-
-            _unitOfWork.CreateTransaction();
-            _loanRepository.Add(bookLoan);
-
-            book.IsAvailable = false;
-            _bookRepository.Update(book);
+            };       
 
             try
             {
+                _unitOfWork.CreateTransaction();
+
+                _loanRepository.Add(bookLoan);
+                book.IsAvailable = false;
+                _bookRepository.Update(book);
+
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
             }
@@ -101,12 +101,11 @@ namespace LibraryManagement.Application.Services
             bookLoan.ReturnDate = DateTime.UtcNow;
             bookLoan.Book.IsAvailable = true;
 
-            _unitOfWork.CreateTransaction();
-            _loanRepository.Update(bookLoan);
-            _bookRepository.Update(bookLoan.Book);
-
             try
             {
+                _unitOfWork.CreateTransaction();
+                _loanRepository.Update(bookLoan);
+                _bookRepository.Update(bookLoan.Book);
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
             }
@@ -134,14 +133,14 @@ namespace LibraryManagement.Application.Services
             }
 
             bookLoan.ReturnDate = DateTime.UtcNow;
-            book.IsAvailable = true;
-
-            _unitOfWork.CreateTransaction();
-            _loanRepository.Update(bookLoan);
-            _bookRepository.Update(book);
+            book.IsAvailable = true;           
 
             try
-            {   _unitOfWork.SaveChanges();
+            {
+                _unitOfWork.CreateTransaction();
+                _loanRepository.Update(bookLoan);
+                _bookRepository.Update(book);
+                _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
             }
             catch (InvalidOperationException)

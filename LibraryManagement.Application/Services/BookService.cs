@@ -52,11 +52,10 @@ public class BookService
             PageCount = pageCount
         };
 
-        _unitOfWork.CreateTransaction();
-        _bookRepository.Add(book);
-
         try
         {
+            _unitOfWork.CreateTransaction();
+            _bookRepository.Add(book);
             _unitOfWork.SaveChanges();
             _unitOfWork.CommitTransaction();
         }
@@ -70,12 +69,11 @@ public class BookService
     public void Remove(int bookId)
     {
         Book bookToRemove = _bookRepository.GetById(bookId) ?? throw new ArgumentException("Book not found.");
-        
-        _unitOfWork.CreateTransaction();
-        _bookRepository.Remove(bookToRemove);
 
         try
         {
+            _unitOfWork.CreateTransaction();
+            _bookRepository.Remove(bookToRemove);
             _unitOfWork.SaveChanges();
             _unitOfWork.CommitTransaction();
         }

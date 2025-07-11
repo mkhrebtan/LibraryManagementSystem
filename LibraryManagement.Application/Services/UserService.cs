@@ -41,12 +41,10 @@ namespace LibraryManagement.Application.Services
                 Password = password
             };
 
-            _unitOfWork.CreateTransaction();
-
-            _userRepository.Add(user);
-
             try
             {
+                _unitOfWork.CreateTransaction();
+                _userRepository.Add(user);
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
             }
@@ -61,11 +59,10 @@ namespace LibraryManagement.Application.Services
         {
             User userToRemove = _userRepository.GetById(userId) ?? throw new ArgumentException("User not found");
 
-            _unitOfWork.CreateTransaction();
-            _userRepository.Remove(userToRemove);
-
             try
             {
+                _unitOfWork.CreateTransaction();
+                _userRepository.Remove(userToRemove);
                 _unitOfWork.SaveChanges();
                 _unitOfWork.CommitTransaction();
             }

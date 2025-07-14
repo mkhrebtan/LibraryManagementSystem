@@ -7,7 +7,7 @@ using LibraryManagement.Domain.UnitOfWork;
 
 namespace LibraryManagement.Application.Services;
 
-public class SubscriptionService : IBookAvailabilityPublisher
+public class SubscriptionService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ISubscriptionRepository _subscriptionRepository;
@@ -20,13 +20,15 @@ public class SubscriptionService : IBookAvailabilityPublisher
         IBookRepository bookRepository, 
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        LoanService loanService)
     {
         _subscriptionRepository = subscriptionRepository;
         _bookRepository = bookRepository;
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
         _notificationService = notificationService;
+        loanService.BookReturned += (sender, args) => NotifySubscribers(args.Book);
     }
 
     public void Subscribe(int bookId, int userId, ICollection<NotificationPreference> notificationPreferences)

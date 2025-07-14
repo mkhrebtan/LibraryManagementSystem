@@ -31,8 +31,8 @@ INotificationService notificationService = new NotificationService();
 // services
 BookService bookService = new BookService(bookRepository, unitOfWork);
 UserService userService = new UserService(userRepository, unitOfWork);
-SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository, unitOfWork, notificationService);
-LoanService loanService = new LoanService(loanRepository, bookRepository, userRepository, subscriptionService, unitOfWork);
+LoanService loanService = new LoanService(loanRepository, bookRepository, userRepository, unitOfWork);
+SubscriptionService subscriptionService = new SubscriptionService(subscriptionRepository, bookRepository, userRepository, unitOfWork, notificationService, loanService);
 
 User? loggedInUser = null;
 

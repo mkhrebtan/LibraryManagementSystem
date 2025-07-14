@@ -1,11 +1,7 @@
-﻿using LibraryManagement.Domain.Models;
+﻿using LibraryManagement.Domain.BookAvailability;
+using LibraryManagement.Domain.Models;
 using LibraryManagement.Domain.Repos;
 using LibraryManagement.Domain.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LibraryManagement.Application.Services
 {
@@ -15,35 +11,38 @@ namespace LibraryManagement.Application.Services
         private readonly ILoanRepository _loanRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IUserRepository _userRepository;
-        private readonly SubscriptionService _subscriptionService;
 
-        public LoanService(ILoanRepository loanRepository, IBookRepository bookRepository, IUserRepository userRepository, 
-            SubscriptionService subscriptionService, IUnitOfWork unitOfWork)
+        public event EventHandler<BookReturnedEventArgs>? BookReturned;
+
+        public LoanService(
+            ILoanRepository loanRepository, 
+            IBookRepository bookRepository, 
+            IUserRepository userRepository,
+            IUnitOfWork unitOfWork)
         {
             _loanRepository = loanRepository;
             _bookRepository = bookRepository;
             _userRepository = userRepository;
-            _subscriptionService = subscriptionService;
             _unitOfWork = unitOfWork;
         }
 
         public IEnumerable<BookLoan> GetUserHistory(int userId)
         {
-            User user = _userRepository.GetById(userId) 
+            User user = _userRepository.GetById(userId)
                 ?? throw new ArgumentException("User not found");
             return _loanRepository.GetUserHistory(user.Id);
         }
 
         public IEnumerable<BookLoan> GetBookHistory(int bookId)
         {
-            Book book = _bookRepository.GetById(bookId) 
+            Book book = _bookRepository.GetById(bookId)
                 ?? throw new ArgumentException("Book not found");
             return _loanRepository.GetBookHistory(book.Id);
         }
 
         public IEnumerable<Book> GetLoanedBooksForUser(int userId)
         {
-            User user = _userRepository.GetById(userId) 
+            User user = _userRepository.GetById(userId)
                 ?? throw new ArgumentException("User not found");
 
             var loans = _loanRepository.GetActiveLoansForUser(user.Id);
@@ -69,7 +68,7 @@ namespace LibraryManagement.Application.Services
                 BookId = bookId,
                 LoanDate = DateTime.UtcNow,
                 ReturnDate = null
-            };       
+            };
 
             try
             {
@@ -115,12 +114,12 @@ namespace LibraryManagement.Application.Services
                 throw;
             }
 
-            _subscriptionService.NotifySubscribers(bookLoan.Book);
+            OnBookReturned(new BookReturnedEventArgs { Book = bookLoan.Book });
         }
 
         public void EndBookLoan(int bookId, int userId)
         {
-            var book = _bookRepository.GetById(bookId) 
+            var book = _bookRepository.GetById(bookId)
                 ?? throw new ArgumentException("Book not found");
             var user = _userRepository.GetById(userId)
                 ?? throw new ArgumentException("User not found");
@@ -133,7 +132,7 @@ namespace LibraryManagement.Application.Services
             }
 
             bookLoan.ReturnDate = DateTime.UtcNow;
-            book.IsAvailable = true;           
+            book.IsAvailable = true;
 
             try
             {
@@ -149,8 +148,12 @@ namespace LibraryManagement.Application.Services
                 throw;
             }
 
-            _subscriptionService.NotifySubscribers(book);
+            OnBookReturned(new BookReturnedEventArgs { Book = book });
         }
 
+        protected virtual void OnBookReturned(BookReturnedEventArgs args)
+        {
+            BookReturned?.Invoke(this, args);
+        }
     }
 }
